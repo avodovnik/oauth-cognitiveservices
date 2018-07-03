@@ -36,14 +36,16 @@ namespace OAuth.CognitiveServices.Web.Controllers
 
         public IActionResult Test(VoicePassage test)
         {
+
             return Ok();
         }
+
 
         public class VoicePassage
         {
             public string Title { get; set; }
             public string FileName { get; set; }
-            public IFormFile Recording { get; set; }
+            public string Recording { get; set; }
         }
     }
 }
