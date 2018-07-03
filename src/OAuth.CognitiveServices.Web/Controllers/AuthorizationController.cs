@@ -23,6 +23,10 @@ namespace OAuth.CognitiveServices.Web.Controllers
 
             // TODO: do validation of the client id, scope, callback id, etc., and then let the user login
 
+            return RedirectToAction("Choose", "Home");
+
+            // ignore all this for now
+
             UriBuilder builder = new UriBuilder(model.redirect_uri);
 
             var qs = QueryString.FromUriComponent(builder.Query);

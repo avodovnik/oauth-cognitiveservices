@@ -16,7 +16,7 @@ namespace OAuth.CognitiveServices.Web
             Configuration = configuration;
         }
 
-        public IConfiguration Configuration { get; }
+        public IConfiguration Configuration { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -28,6 +28,7 @@ namespace OAuth.CognitiveServices.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseBrowserLink();
@@ -49,6 +50,24 @@ namespace OAuth.CognitiveServices.Web
 
             // TODO: make this actually safe
             app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod());
+
+
+            //configuration
+            {
+                var builder = new ConfigurationBuilder()
+                    .SetBasePath(env.ContentRootPath)
+                    .AddJsonFile("appsettings.json",
+                                 optional: false,
+                                 reloadOnChange: true)
+                    .AddEnvironmentVariables();
+
+                if (env.IsDevelopment())
+                {
+                    builder.AddUserSecrets<Startup>();
+                }
+
+                Configuration = builder.Build();
+            }
         }
     }
 }
