@@ -46,27 +46,33 @@
         button.previousElementSibling.disabled = false;
         __log('Stopped recording.');
 
-        // create WAV download link using audio data blob
-        createDownloadLink();
+        // send this on to our API
+        postAudioSample();
 
         recorder.clear();
     }
 
-    function createDownloadLink() {
-        recorder && recorder.exportWAV(function (blob) {
-            var url = URL.createObjectURL(blob);
-            var li = document.createElement('li');
-            var au = document.createElement('audio');
-            var hf = document.createElement('a');
+    //function createDownloadLink() {
+    //    recorder && recorder.exportWAV(function (blob) {
+    //        var url = URL.createObjectURL(blob);
+    //        var li = document.createElement('li');
+    //        var au = document.createElement('audio');
+    //        var hf = document.createElement('a');
 
-            au.controls = true;
-            au.src = url;
-            hf.href = url;
-            hf.download = new Date().toISOString() + '.wav';
-            hf.innerHTML = hf.download;
-            li.appendChild(au);
-            li.appendChild(hf);
-            recordingslist.appendChild(li);
+    //        au.controls = true;
+    //        au.src = url;
+    //        hf.href = url;
+    //        hf.download = new Date().toISOString() + '.wav';
+    //        hf.innerHTML = hf.download;
+    //        li.appendChild(au);
+    //        li.appendChild(hf);
+    //        recordingslist.appendChild(li);
+    //    });
+    //}
+
+    function postAudioSample() {
+        recorder && recorder.exportWAV(function (blob) {
+            do_post_request("/home/test", blob);
         });
     }
 
@@ -90,4 +96,6 @@
     };
 </script>
 
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <script src="@Url.Content("~/js/Recorder.js")"></script>
+<script src="@Url.Content("~/js/site.js")"></script>

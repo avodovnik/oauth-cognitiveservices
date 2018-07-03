@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using OAuth.CognitiveServices.Web.Models;
@@ -31,6 +32,18 @@ namespace OAuth.CognitiveServices.Web.Controllers
         public IActionResult Voice()
         {
             return View();
+        }
+
+        public IActionResult Test(VoicePassage test)
+        {
+            return Ok();
+        }
+
+        public class VoicePassage
+        {
+            public string Title { get; set; }
+            public string FileName { get; set; }
+            public IFormFile Recording { get; set; }
         }
     }
 }
