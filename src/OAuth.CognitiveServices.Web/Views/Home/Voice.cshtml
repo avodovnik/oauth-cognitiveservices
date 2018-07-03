@@ -29,7 +29,10 @@
         //input.connect(audio_context.destination);
         //__log('Input connected to audio context destination.');
 
-        recorder = new Recorder(input);
+        recorder = new Recorder(input, {
+            numChannels: 1,
+            sampleRate: 16000
+        });
         __log('Recorder initialised.');
     }
 
@@ -51,24 +54,6 @@
 
         recorder.clear();
     }
-
-    //function createDownloadLink() {
-    //    recorder && recorder.exportWAV(function (blob) {
-    //        var url = URL.createObjectURL(blob);
-    //        var li = document.createElement('li');
-    //        var au = document.createElement('audio');
-    //        var hf = document.createElement('a');
-
-    //        au.controls = true;
-    //        au.src = url;
-    //        hf.href = url;
-    //        hf.download = new Date().toISOString() + '.wav';
-    //        hf.innerHTML = hf.download;
-    //        li.appendChild(au);
-    //        li.appendChild(hf);
-    //        recordingslist.appendChild(li);
-    //    });
-    //}
 
     function postAudioSample() {
         recorder && recorder.exportWAV(function (blob) {
