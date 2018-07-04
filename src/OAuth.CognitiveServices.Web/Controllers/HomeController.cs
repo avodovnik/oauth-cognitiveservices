@@ -56,9 +56,45 @@ namespace OAuth.CognitiveServices.Web.Controllers
 
         [HttpPost]
         [Route("voice/enrollment")]
-        public JsonResult VoiceEnrollmentPost()
+        public async Task<Enrollment> VoiceEnrollmentPost()
         {
-            return Json(new { result = "you're a genius" });
+            try
+            {
+                var file = Request.Form.Files.First();
+
+                int outRate = 44000;
+                var source = new RawSourceWaveStream(file.OpenReadStream(), new WaveFormat(outRate, 2));
+                using (var wavFileReader = new WaveFileReader(source))
+                {
+                    var resampler = new WdlResamplingSampleProvider(wavFileReader.ToSampleProvider(), 16000);
+                    var monoSource = resampler.ToMono().ToWaveProvider16();
+
+                    using (var outputStream = new MemoryStream())
+                    {
+                        WaveFileWriter.WriteWavFileToStream(outputStream, monoSource);
+                        outputStream.Seek(0, SeekOrigin.Begin);
+
+
+                        // Todo - Fix hard coded response as getting TooNoisy error from service!
+
+                        //var response = await client.EnrollAsync(outputStream, Guid.Parse("fb786241-9f01-41cc-a585-50b65bd52c38"));
+                        //return response;
+
+                        return new Enrollment
+                        {
+                            RemainingEnrollments = 2,
+                            EnrollmentsCount = 1,
+                            Phrase = "Houston, we have had a problem"
+                        };
+                    }
+                }
+            }
+            catch
+            {
+               // nada
+            }
+
+            return null;
         }
     
         public async Task<IActionResult> Test()
@@ -74,11 +110,9 @@ namespace OAuth.CognitiveServices.Web.Controllers
                     var resampler = new WdlResamplingSampleProvider(wavFileReader.ToSampleProvider(), 16000);
                     var monoSource = resampler.ToMono().ToWaveProvider16();
 
-                    
                     using (var outputStream = new MemoryStream())
                     {
                         WaveFileWriter.WriteWavFileToStream(outputStream, monoSource);
-
                         outputStream.Seek(0, SeekOrigin.Begin);
 
                         var result = await client.VerifyAsync(outputStream, Guid.Parse("fb786241-9f01-41cc-a585-50b65bd52c38"));
@@ -106,4 +140,11 @@ namespace OAuth.CognitiveServices.Web.Controllers
             public string Recording { get; set; }
         }
     }
+/*
+    "enrollmentStatus" : "Enrolled", // [Enrolled | Enrolling | Training]
+    "enrollmentsCount":0,
+    "remainingEnrollments" : 0,
+    "phrase" : "Recognized verification phrase"
+*/
+
 }

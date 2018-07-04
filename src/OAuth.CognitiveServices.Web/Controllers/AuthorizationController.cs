@@ -40,6 +40,11 @@ namespace OAuth.CognitiveServices.Web.Controllers
             return Redirect(builder.ToString());
         }
 
+        /// <summary>
+        /// Get the token back for the user
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         [HttpGet]
         [Route("token")]
@@ -48,7 +53,14 @@ namespace OAuth.CognitiveServices.Web.Controllers
             return Json(new { message = "OK" });
         }
 
-        public ActionResult Done(string userId)
+        /// <summary>
+        /// Complete user verification
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        /// [HttpGet]
+        [Route("done")]
+        public ActionResult Done(string userId ="")
         {
             return Content("Thanks!");
         }

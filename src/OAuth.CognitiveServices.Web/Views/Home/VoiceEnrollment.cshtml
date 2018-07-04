@@ -6,37 +6,129 @@
 
 <h2>VoiceEnrollment</h2>
 
-<ul>
-    @foreach (var phrase in Model)
-    {
-        <li>@phrase.Phrase</li>
-    }
-</ul>
+<div>
+    @Html.DropDownList("voiceSelection", Model.Select(x => new SelectListItem() { Text = x.Phrase }), new { @class = "form-control", @id = "voiceSelector" })
+</div>
 
-<a href="#" onclick="test();">Test me</a>
+<span id="phrase-box-content"></span>
 
+<p>Read the phrase above <strong>three times</strong> to enroll your voice.</p>
+
+<button onclick="startRecording(this);">record</button>
+<button onclick="stopRecording(this);" disabled>stop</button>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type="text/javascript">
-    function test() {
+    $(document).ready(function () {
+        var str = "";
+        $("select option:selected").each(function () {
+            str += $(this).text() + " ";
+        });
+
+        $("#phrase-box-content").text(str);
+    })
+
+    $("#voiceSelector").on('change', function () {
+
+        console.log("changed");
+        var str = "";
+        $("select option:selected").each(function () {
+            str += $(this).text() + " ";
+        });
+        $("#phrase-box-content").text(str);
+    });
+</script>
+
+<script>
+    function __log(e, data) {
+        __log.innerHTML += "\n" + e + " " + (data || '');
+    }
+
+    var audio_context;
+    var recorder;
+    var remainingErollments = 3;
+
+    function startUserMedia(stream) {
+        var input = audio_context.createMediaStreamSource(stream);
+        __log('Media stream created.');
+
+        recorder = new Recorder(input, {
+            numChannels: 1,
+            sampleRate: 16000
+        });
+        __log('Recorder initialised.');
+    }
+
+    function startRecording(button) {
+        if (remainingErollments > 0) {
+            recorder && recorder.record();
+            button.disabled = true;
+            button.nextElementSibling.disabled = false;
+            __log('Recording...');
+        }
+    }
+
+    function stopRecording(button) {
+        recorder && recorder.stop();
+        button.disabled = true;
+        button.previousElementSibling.disabled = false;
+        __log('Stopped recording.');
+
+        postAudioSample();
+        recorder.clear();
+    }
+
+    function postAudioSample() {
+        recorder && recorder.exportWAV(function (blob) {
+            post_request("/voice/enrollment", blob);
+        });
+    }
+
+    function post_request(postUrl, data) {
+        var fd = new FormData();
+        fd.append('Recording', data);
         $.ajax({
             type: 'POST',
-            url: "/voice/enrollment",
-            data: {
-                message: "whatever"
-            },
+            url: postUrl,
+            data: fd,
             processData: false,
             contentType: false
         }).done(function (data) {
-            alert(data.result);
-            });
+            if (typeof data !== "undefined") {
+                if (remainingErollments == 0) {
+                    window.location.href("/api/auth/done");
+                }
 
+                remainingErollments--;
+                //remainingErollments = data.remainingEnrollments;
+            }
+        });
 
         // when you enroll, you get back a status, telling you how many attempts remain
-        // and what the status is 
+        // and what the status is
 
         // "EnrollmentStatus": "Enrolling",
         // "EnrollmentsCount": 1,
         // "RemainingEnrollments": 2,
-
-
     }
+     
+    window.onload = function init() {
+        try {
+            // webkit shim
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+            window.URL = window.URL || window.webkitURL;
+
+            audio_context = new AudioContext;
+            __log('Audio context set up.');
+            __log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+        } catch (e) {
+            alert('No web audio support in this browser!');
+        }
+
+        navigator.getUserMedia({ audio: true }, startUserMedia, function (e) {
+            __log('No live audio input: ' + e);
+        });
+    };
 </script>
