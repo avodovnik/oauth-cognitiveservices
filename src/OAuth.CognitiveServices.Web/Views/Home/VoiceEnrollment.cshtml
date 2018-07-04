@@ -1,0 +1,42 @@
+﻿@model Microsoft.ProjectOxford.SpeakerRecognition.Contract.Verification.VerificationPhrase[]
+
+@{
+    ViewData["Title"] = "VoiceEnrollment";
+}
+
+<h2>VoiceEnrollment</h2>
+
+<ul>
+    @foreach (var phrase in Model)
+    {
+        <li>@phrase.Phrase</li>
+    }
+</ul>
+
+<a href="#" onclick="test();">Test me</a>
+
+<script type="text/javascript">
+    function test() {
+        $.ajax({
+            type: 'POST',
+            url: "/voice/enrollment",
+            data: {
+                message: "whatever"
+            },
+            processData: false,
+            contentType: false
+        }).done(function (data) {
+            alert(data.result);
+            });
+
+
+        // when you enroll, you get back a status, telling you how many attempts remain
+        // and what the status is 
+
+        // "EnrollmentStatus": "Enrolling",
+        // "EnrollmentsCount": 1,
+        // "RemainingEnrollments": 2,
+
+
+    }
+</script>

@@ -13,7 +13,6 @@
         processData: false,
         contentType: false
     }).done(function (data) {
-        // print the output from the upload.php script
-        console.log(data);
+        return data;
     });
 }

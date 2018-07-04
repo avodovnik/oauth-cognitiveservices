@@ -27,10 +27,15 @@ namespace OAuth.CognitiveServices.Web
 
             services.Configure<FormOptions>(x =>
             {
-                x.MemoryBufferThreshold = int.MaxValue;     
+                x.MemoryBufferThreshold = int.MaxValue;
                 x.ValueLengthLimit = int.MaxValue;
                 x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
             });
+
+            services.AddSingleton(
+                new Microsoft.ProjectOxford.SpeakerRecognition.SpeakerVerificationServiceClient(
+                                this.Configuration["CognitiveServices:SpeakerRecognitionKey"]));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -48,6 +48,11 @@ namespace OAuth.CognitiveServices.Web.Controllers
             return Json(new { message = "OK" });
         }
 
+        public ActionResult Done(string userId)
+        {
+            return Content("Thanks!");
+        }
+
         public class TokenRequestModel
         {
             public string grant_type { get; set; }
