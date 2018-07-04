@@ -27,6 +27,7 @@ namespace OAuth.CognitiveServices.Web
 
             services.Configure<FormOptions>(x =>
             {
+                x.MemoryBufferThreshold = int.MaxValue;     
                 x.ValueLengthLimit = int.MaxValue;
                 x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
             });

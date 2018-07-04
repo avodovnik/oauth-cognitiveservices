@@ -11,6 +11,9 @@ using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.ProjectOxford.SpeakerRecognition.Contract.Verification;
+using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using OAuth.CognitiveServices.Web.Models;
 
 namespace OAuth.CognitiveServices.Web.Controllers
@@ -41,16 +44,41 @@ namespace OAuth.CognitiveServices.Web.Controllers
 
         public async Task<IActionResult> Test()
         {
-            var file = Request.Form.Files.First();
-            //using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(test.Recording)))
-            //{
-            Microsoft.ProjectOxford.SpeakerRecognition.SpeakerVerificationServiceClient client
-                = new Microsoft.ProjectOxford.SpeakerRecognition.SpeakerVerificationServiceClient(
-                    this.config["CognitiveServices:SpeakerRecognitionKey"]);
+            try
+            {
+                var file = Request.Form.Files.First();
 
-            var result = await client.VerifyAsync(file.OpenReadStream(), Guid.Parse("fb786241-9f01-41cc-a585-50b65bd52c38"));
-            //}
+                int outRate = 44000;
+                var source = new RawSourceWaveStream(file.OpenReadStream(), new WaveFormat(outRate, 2));
+                using (var wavFileReader = new WaveFileReader(source))
+                {
+                    var resampler = new WdlResamplingSampleProvider(wavFileReader.ToSampleProvider(), 16000);
+                    var monoSource = resampler.ToMono().ToWaveProvider16();
 
+                    
+                    using (var outputStream = new MemoryStream())
+                    {
+                        WaveFileWriter.WriteWavFileToStream(outputStream, monoSource);
+
+                        outputStream.Seek(0, SeekOrigin.Begin);
+
+                        Microsoft.ProjectOxford.SpeakerRecognition.SpeakerVerificationServiceClient client
+                            = new Microsoft.ProjectOxford.SpeakerRecognition.SpeakerVerificationServiceClient(
+                                this.config["CognitiveServices:SpeakerRecognitionKey"]);
+
+                        var result = await client.VerifyAsync(outputStream, Guid.Parse("fb786241-9f01-41cc-a585-50b65bd52c38"));
+
+                        if (result.Result == Result.Accept)
+                        {
+                            // verification successful
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+               int x = 1;
+            }
 
             return Ok();
         }
